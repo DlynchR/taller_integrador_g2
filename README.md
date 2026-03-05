@@ -1,5 +1,5 @@
-# taller_integrador
-El presente respositorio corresponde al trabajo realizado en el curso EL5610 Taller Integrador de la carrera de Ingeniería en Electrónica del Instituto Tecnológico de Costa Rica.
+# Taller_Integrador
+El presente respositorio corresponde al trabajo realizado por el grupo 2, conformado por Alvaro Chacón y Denzel Lynch, en el curso EL5610 Taller Integrador de la carrera de Ingeniería en Electrónica del Instituto Tecnológico de Costa Rica.
 
 En el siguiente enlace podrá observar generalidades del protocolo APRS y LORA:
 
