@@ -69,7 +69,7 @@ gantt
 ---
 
 ### Descripción de cada estado
-
+![FSM iGate APRS ESP32](fsm_igate_aprs_esp32.svg)
 
 ### S0: Boot
 **Color:** Gris (arranque)
