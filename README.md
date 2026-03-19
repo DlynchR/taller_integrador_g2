@@ -67,9 +67,9 @@ gantt
 | S7: Error / Watchdog | Fallo crítico | S0: Boot (ESP.restart()) |
 
 ---
-
-### Descripción de cada estado
 ![FSM iGate APRS ESP32](fsm_igate_aprs_esp32.svg)
+### Descripción de cada estado
+
 
 ### S0: Boot
 **Color:** Gris (arranque)
