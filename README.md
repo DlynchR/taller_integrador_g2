@@ -178,7 +178,7 @@ Dependiendo de la gravedad:
 
 ---
 
-## Resumen de estados
+### Resumen de estados
 
 | ID | Nombre | Color | Función principal |
 |---|---|---|---|
@@ -192,3 +192,114 @@ Dependiendo de la gravedad:
 | S6 | Beacon TX | Coral | Transmitir posición GPS |
 | S7 | Error / Watchdog | Rojo | Manejar fallos y reiniciar |
 
+## Diagrama de bloques — iGate APRS ESP32 LILYGO
+ 
+### Diagrama
+ 
+![Diagrama de bloques iGate APRS ESP32](block_diagram_igate_esp32_nogps.svg)
+ 
+---
+ 
+### Descripción general
+ 
+El sistema se divide en tres capas: hardware físico, firmware y red internet. Los datos fluyen desde la antena LoRa hacia arriba hasta llegar a la red APRS-IS y finalmente a aprs.fi.
+ 
+---
+ 
+### Capa 1: Hardware — LILYGO ESP32
+ 
+Componentes físicos presentes en la placa.
+ 
+| Módulo | Interfaz | Función |
+|---|---|---|
+| LoRa SX1278 | SPI | Recepción y transmisión de paquetes APRS en 433 MHz |
+| WiFi ESP32 | Integrado | Conexión a red local y a internet |
+| OLED display | I2C | Visualización de estado, RSSI y paquetes recibidos |
+ 
+> El iGate no cuenta con módulo GPS. La posición se configura como coordenadas fijas en `config.h`.
+ 
+---
+ 
+### Capa 2: Firmware — ESP32
+ 
+#### FSM controller
+Módulo central del firmware. Ejecuta la máquina de estados (S0–S7) en el loop principal y coordina todos los demás módulos. Ningún módulo actúa por cuenta propia — todos reciben órdenes del FSM o le reportan eventos.
+ 
+#### LoRa driver
+Abstrae la comunicación SPI con el módulo LoRa SX1278 usando la librería RadioLib. Expone dos operaciones principales al FSM: modo recepción continua (`receiveMode()`) y transmisión de un buffer (`transmit()`). Reporta al FSM cuando llega un paquete nuevo.
+ 
+#### APRS parser
+Recibe el buffer de bytes del LoRa driver y lo decodifica. Verifica el preámbulo AX.25, valida el CRC, extrae el callsign origen, destino, path de digipeaters y el payload APRS. Retorna un frame estructurado al FSM, o un error si el paquete es inválido.
+ 
+#### APRS-IS client
+Maneja la conexión TCP con el servidor `rotate.aprs2.net` en el puerto 14580. Realiza el login con callsign y passcode, mantiene la conexión activa, y expone una función `forward(frame)` que el FSM llama al recibir un paquete válido. Detecta caídas de conexión y notifica al FSM para reconectar.
+ 
+#### Beacon builder
+Construye el frame APRS de posición que el iGate transmite periódicamente por LoRa. Lee las coordenadas fijas almacenadas en el Config manager, las formatea en el estándar APRS con el símbolo de iGate (`/&`), y entrega el buffer listo para transmitir al LoRa driver.
+ 
+#### Display manager
+Controla el OLED de 128x64 píxeles vía I2C. Muestra en pantalla: estado de conexión WiFi y APRS-IS, callsign de la última estación escuchada, RSSI y SNR del último paquete, contador de paquetes recibidos y forwarded.
+ 
+#### Config manager
+Lee y escribe la configuración persistente en la EEPROM / Preferences del ESP32. Almacena: callsign, passcode, credenciales WiFi, coordenadas fijas de posición (latitud y longitud), intervalo del beacon, y versión del firmware. Es la fuente de verdad para el Beacon builder y el APRS-IS client.
+ 
+#### WDT (Watchdog timer)
+Temporizador de hardware del ESP32. Si el loop principal se bloquea y no ejecuta `esp_task_wdt_reset()` dentro del tiempo configurado (típicamente 10 segundos), el WDT reinicia el microcontrolador automáticamente, volviendo al estado S0.
+ 
+---
+ 
+### Capa 3: Internet — red APRS-IS
+ 
+| Servicio | Función |
+|---|---|
+| `rotate.aprs2.net:14580` | Servidor de entrada a la red APRS-IS. Recibe los paquetes forwarded por el iGate vía TCP |
+| `aprs.fi` | Visualización pública en mapa de todos los paquetes distribuidos por la red APRS-IS |
+ 
+---
+ 
+### Flujo de datos principal
+ 
+```
+Antena LoRa
+    │  señal RF 433 MHz
+    ▼
+LoRa SX1278 (hardware)
+    │  buffer de bytes por SPI
+    ▼
+LoRa driver (firmware)
+    │  paquete crudo
+    ▼
+APRS parser (firmware)
+    │  frame APRS estructurado
+    ▼
+FSM controller (firmware)
+    │  frame validado
+    ▼
+APRS-IS client (firmware)
+    │  TCP / internet
+    ▼
+rotate.aprs2.net
+    │  red APRS-IS
+    ▼
+aprs.fi
+```
+ 
+---
+ 
+### Flujo del beacon
+ 
+```
+FSM controller (timer vencido)
+    │
+    ▼
+Config manager → coordenadas fijas
+    │
+    ▼
+Beacon builder → frame APRS de posición
+    │
+    ▼
+LoRa driver → transmit()
+    │  señal RF 433 MHz
+    ▼
+Antena LoRa
+```
