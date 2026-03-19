@@ -1,11 +1,48 @@
-# Taller_Integrador
+# Firmware para módulo iGate protocolos LORA/APRS
 El presente respositorio corresponde al trabajo realizado por el grupo 2, conformado por Alvaro Chacón y Denzel Lynch, en el curso EL5610 Taller Integrador de la carrera de Ingeniería en Electrónica del Instituto Tecnológico de Costa Rica.
 
-En el siguiente enlace podrá observar generalidades del protocolo APRS y LORA:
+## Tabla de contenidos
 
-https://www.canva.com/design/DAHCYHS7kGw/CJDRDF5Uz_gmbKo0bwzgLw/edit?utm_content=DAHCYHS7kGw&utm_campaign=designshare&utm_medium=link2&utm_source=sharebutton
+- [Descripción del proyecto](#descripción-del-proyecto)
+- [Cronograma del Proyecto ](#cronograma-del-proyecto--firmware-igate-aprs-grupo-2)
+- [Documentación de funcionamiento y legislación de protocolos LORA y APRS](#documentación-de-funcionamiento-y-lesgislación-de-protocolos-lora-y-aprs)
+- [Máquina de Estados ](#máquina-de-estados--igate-aprs-esp32-lilygo)
+  - [Diagrama de transiciones](#diagrama-de-transiciones)
+  - [Descripción de cada estado](#descripción-de-cada-estado)
+    - [S0: Boot](#s0-boot)
+    - [S1: WiFi Connect](#s1-wifi-connect)
+    - [Sin WiFi (modo offline)](#sin-wifi-modo-offline)
+    - [S2: APRS-IS Connect](#s2-aprs-is-connect)
+    - [S3: Idle / Escucha LoRa](#s3-idle--escucha-lora)
+    - [S4: Decodificar APRS](#s4-decodificar-aprs)
+    - [S5: Forward APRS-IS](#s5-forward-aprs-is)
+    - [S6: Beacon TX](#s6-beacon-tx)
+    - [S7: Error / Watchdog](#s7-error--watchdog)
+  - [Resumen de estados](#resumen-de-estados)
+- [Diagrama de bloques ](#diagrama-de-bloques--igate-aprs-esp32-lilygo)
+  - [Diagrama](#diagrama)
+  - [Descripción general](#descripción-general)
+  - [Capa 1: Hardware — LILYGO ESP32](#capa-1-hardware--lilygo-esp32)
+  - [Capa 2: Firmware — ESP32](#capa-2-firmware--esp32)
+    - [FSM controller](#fsm-controller)
+    - [LoRa driver](#lora-driver)
+    - [APRS parser](#aprs-parser)
+    - [APRS-IS client](#aprs-is-client)
+    - [Beacon builder](#beacon-builder)
+    - [Display manager](#display-manager)
+    - [Config manager](#config-manager)
+    - [WDT (Watchdog timer)](#wdt-watchdog-timer)
+  - [Capa 3: Internet — Red APRS-IS](#capa-3-internet--red-aprs-is)
+  - [Flujo de datos principal](#flujo-de-datos-principal)
+  - [Flujo del beacon](#flujo-del-beacon)
 
-## 📅 Cronograma del Proyecto — Firmware iGate APRS (Grupo 2)
+## Descripción del proyecto
+
+Este repositorio alberga el Firmware desarrollado para el funcionamiento de un módulo iGate, el hardware específico es el TTGO Lilygo LoRa32 T3S3 V1.2. Este recibirá los paquetes de posición GPS provenientes de "Trackers" asigandos a otros grupos, trabajando en una banda de frecuencia de 433.775 MHz siguiendo la legislación costarricense (PNAF, Decreto N° 44010-MICITT), y esta información será tomada por un servidor, el cual permitirá el monitoreo de los trackers en una plataforma como [aprs.fi](https://aprs.fi)
+
+El firmware de referencia fue desarrollado por Ricardo Guzman (richonguzman) y se encuentra en GitHub como [LoRa_APRS_iGate](https://github.com/richonguzman/LoRa_APRS_iGate?tab=readme-ov-file)
+
+## Cronograma del Proyecto — Firmware iGate APRS (Grupo 2)
 ```mermaid
 gantt
     title Firmware iGate APRS — Grupo 2
@@ -40,6 +77,14 @@ gantt
     Documentación final                    :f2, 2025-05-18, 28d
     Preparación presentación final         :f3, 2025-05-25, 21d
 ```
+
+## Documentación de funcionamiento y lesgislación de protocolos LORA y APRS
+
+En el siguiente enlace podrá observar generalidades del protocolo APRS y LORA:
+
+https://www.canva.com/design/DAHCYHS7kGw/CJDRDF5Uz_gmbKo0bwzgLw/edit?utm_content=DAHCYHS7kGw&utm_campaign=designshare&utm_medium=link2&utm_source=sharebutton
+
+
 
 
 ## Máquina de Estados — iGate APRS ESP32 LILYGO
