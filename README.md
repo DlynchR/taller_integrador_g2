@@ -157,7 +157,7 @@ Después del envío actualiza el contador de paquetes forwarded en el OLED. Si e
 **Color:** Coral (transmisión)
 
 Transmite la posición GPS del iGate como un paquete APRS por LoRa, para que otros equipos en el aire (globos, trackers) puedan ver la ubicación de la estación. El flujo es:
-1. Leer coordenadas actuales del módulo GPS.
+1. Leer coordenadas fijas desde la configuración (config.h).
 2. Construir el frame APRS de posición con símbolo de iGate (`/&`).
 3. Cambiar el módulo LoRa a modo transmisión (`transmit()`).
 4. Enviar el paquete y esperar confirmación de TX completo.
