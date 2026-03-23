@@ -42,7 +42,7 @@ Este repositorio alberga el Firmware desarrollado para el funcionamiento de un m
 
 El firmware de referencia fue desarrollado por Ricardo Guzman (richonguzman) y se encuentra en GitHub como [LoRa_APRS_iGate](https://github.com/richonguzman/LoRa_APRS_iGate?tab=readme-ov-file)
 
-## Cronograma del Proyecto — Firmware iGate APRS (Grupo 2)
+## Cronograma del Proyecto — Firmware iGate APRS (Grupo 1)
 ```mermaid
 gantt
     title Firmware iGate APRS — Grupo 2
