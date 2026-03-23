@@ -1,5 +1,5 @@
 # Firmware para módulo iGate protocolos LORA/APRS
-El presente respositorio corresponde al trabajo realizado por el grupo 2, conformado por Alvaro Chacón y Denzel Lynch, en el curso EL5610 Taller Integrador de la carrera de Ingeniería en Electrónica del Instituto Tecnológico de Costa Rica.
+El presente respositorio corresponde al trabajo realizado por el grupo 1, conformado por Alvaro Chacón y Denzel Lynch, en el curso EL5610 Taller Integrador de la carrera de Ingeniería en Electrónica del Instituto Tecnológico de Costa Rica.
 
 ## Tabla de contenidos
 
