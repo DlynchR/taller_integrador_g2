@@ -4,7 +4,7 @@ El presente respositorio corresponde al trabajo realizado por el grupo 1, confor
 ## Tabla de contenidos
 
 - [Descripción del proyecto](#descripción-del-proyecto)
-- [Cronograma del Proyecto ](#cronograma-del-proyecto--firmware-igate-aprs-grupo-2)
+- [Cronograma del Proyecto ](#cronograma-del-proyecto--firmware-igate-aprs-grupo-1)
 - [Documentación de funcionamiento y legislación de protocolos LORA y APRS](#documentación-de-funcionamiento-y-lesgislación-de-protocolos-lora-y-aprs)
 - [Máquina de Estados ](#máquina-de-estados--igate-aprs-esp32-lilygo)
   - [Diagrama de transiciones](#diagrama-de-transiciones)
@@ -45,7 +45,7 @@ El firmware de referencia fue desarrollado por Ricardo Guzman (richonguzman) y s
 ## Cronograma del Proyecto — Firmware iGate APRS (Grupo 1)
 ```mermaid
 gantt
-    title Firmware iGate APRS — Grupo 2
+    title Firmware iGate APRS — Grupo 1
     dateFormat  YYYY-MM-DD
     axisFormat  %d %b
 
