@@ -1,5 +1,5 @@
 // ============================================================
-// aprs_parser.h — decodificación de frames APRS sobre LoRa
+// aprs_parser.h — Decodificación de frames APRS sobre LoRa
 // Usado en estado S4 de la FSM
 // ============================================================
 #pragma once
@@ -8,7 +8,7 @@
 
 // Estructura con los campos extraídos de un frame APRS
 struct AprsFrame {
-    char    src[12];        // callsign origen  ej: "TI2TEC-9"
+    char    src[12];        // callsign origen  ej: "TI1TEC-10"
     char    dst[12];        // callsign destino ej: "APRS"
     char    path[64];       // path de digipeaters ej: "WIDE1-1,WIDE2-1"
     char    payload[220];   // información APRS (posición, telemetría, etc.)

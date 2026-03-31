@@ -1,10 +1,10 @@
 // ============================================================
-// aprs_parser.cpp — decodificación de frames APRS sobre LoRa
+// aprs_parser.cpp — Decodificación de frames APRS sobre LoRa
 // Usado en estado S4 de la FSM
 //
 // Formato estándar de un frame APRS sobre LoRa:
 //   SRC>DST,PATH:payload\0
-//   ej: TI2TEC-9>APLT23,WIDE1-1:!1001.33N/08403.36W>
+//   ej: TI1TEC-10>APLT23,WIDE1-1:!1001.33N/08403.36W>
 // ============================================================
 #include "aprs_parser.h"
 #include "config.h"
