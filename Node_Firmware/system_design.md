@@ -7,6 +7,8 @@
 > Autores: Denzel y Álvaro
 >
 > Fecha: 2026
+>
+> Link a presentación: https://canva.link/yzzocvnaaeviv1d
 
 ---
 
