@@ -1,15 +1,13 @@
-// ============================================================
 // aprs_parser.cpp — Decodificación de frames APRS sobre LoRa
 // Usado en estado S4 de la FSM
 //
 // Formato estándar de un frame APRS sobre LoRa:
 //   SRC>DST,PATH:payload\0
 //   ej: TI1TEC-10>APLT23,WIDE1-1:!1001.33N/08403.36W>
-// ============================================================
 #include "aprs_parser.h"
 #include "config.h"
 
-// ── aprs_parse ───────────────────────────────────────────────
+//  aprs_parse 
 bool aprs_parse(const uint8_t* buf, uint8_t len,
                 int16_t rssi, float snr,
                 AprsFrame& frame) {
@@ -32,7 +30,15 @@ bool aprs_parse(const uint8_t* buf, uint8_t len,
 
     String raw = String(frame.raw);
 
-    // ── Buscar separador '>' entre src y dst ─────────────────
+    //  Saltar cabecera de 3 bytes si está presente 
+    // Algunos dispositivos LoRa APRS agregan 0x3C 0xFF 0x01
+    // al inicio del frame antes del texto APRS
+    if (len > 3 && buf[0] == 0x3C && buf[1] == 0xFF && buf[2] == 0x01) {
+        raw = raw.substring(3);
+        Serial.println("[Parser] Cabecera 0x3C 0xFF 0x01 detectada y saltada");
+    }
+
+    //  Buscar separador '>' entre src y dst 
     int gt_pos = raw.indexOf('>');
     if (gt_pos < 1 || gt_pos > 10) {
         Serial.println("[Parser] No se encontró '>'");
