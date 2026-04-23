@@ -1,2 +1,2 @@
-# Firmware Grupo 2
-El presente documento tiene la explicaciòn del funcionamiento del firmware llevado acabo por el gtupo 2 de taller integrador
+# Firmware Grupo 1
+El presente directorio tiene la explicaciòn del funcionamiento del firmware llevado acabo por el grupo 1 de taller integrador
