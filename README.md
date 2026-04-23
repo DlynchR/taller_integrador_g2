@@ -2,7 +2,7 @@
 El presente respositorio corresponde al trabajo realizado por el grupo 1, conformado por Alvaro Chacón y Denzel Lynch, en el curso EL5610 Taller Integrador de la carrera de Ingeniería en Electrónica del Instituto Tecnológico de Costa Rica.
 
 #### Presentación extra de nodo agrícola: https://canva.link/yzzocvnaaeviv1d
-
+#### Presentación de la investigación previa: https://canva.link/u0wefpqkjim4926
 ## Tabla de contenidos
 
 - [Descripción del proyecto](#descripción-del-proyecto)
