@@ -20,12 +20,11 @@ void display_aprsis_connecting();
 void display_aprsis_connected();
 void display_aprsis_failed();
 
-// Pantalla principal - estado normal de operación (S3)
-// Muestra: callsign, WiFi, APRS-IS, contadores
-void display_status(uint32_t rx_count, uint32_t tx_count);
+// Pantalla principal  muestra callsign, WiFi, APRS-IS,
+// contadores, última estación escuchada, RSSI y distancia
+void display_status(uint32_t rx_count, uint32_t tx_count,
+                    const char* last_call, int16_t last_rssi,
+                    float last_dist_km, uint32_t stations);
 
-// Pantalla de paquete recibido — muestra src, RSSI, SNR
 void display_packet(const AprsFrame& frame);
-
-// Pantalla de beacon TX
 void display_beacon();

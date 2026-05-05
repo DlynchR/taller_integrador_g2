@@ -21,13 +21,11 @@ void display_init() {
 void display_boot() {
     u8g2.clearBuffer();
     u8g2.setFont(u8g2_font_7x13B_tr);
-    u8g2.drawStr(20, 20, "LoRa iGate");
-
+    u8g2.drawStr(20, 14, "LoRa iGate");
     u8g2.setFont(u8g2_font_6x10_tr);
-    u8g2.drawStr(28, 36, SSID_APRS);
-    u8g2.drawStr(28, 50, "v" FW_VERSION);
-
-    u8g2.drawHLine(0, 56, 128);
+    u8g2.drawStr(28, 30, SSID_APRS);
+    u8g2.drawStr(28, 44, "v" FW_VERSION);
+    u8g2.drawHLine(0, 52, 128);
     u8g2.drawStr(10, 63, "Iniciando...");
     u8g2.sendBuffer();
 }
@@ -36,13 +34,12 @@ void display_boot() {
 void display_wifi_connecting() {
     u8g2.clearBuffer();
     u8g2.setFont(u8g2_font_6x10_tr);
-    u8g2.drawStr(0, 12,  "WiFi");
-    u8g2.drawStr(0, 26,  "Conectando...");
-    u8g2.drawStr(0, 40,  WIFI_SSID);
+    u8g2.drawStr(0, 12, "WiFi");
+    u8g2.drawStr(0, 26, "Conectando...");
+    u8g2.drawStr(0, 40, WIFI_SSID);
     u8g2.sendBuffer();
 }
 
-//   display_wifi_connected                  ─
 void display_wifi_connected(const String& ip) {
     u8g2.clearBuffer();
     u8g2.setFont(u8g2_font_6x10_tr);
@@ -72,7 +69,7 @@ void display_aprsis_connecting() {
     u8g2.sendBuffer();
 }
 
-//   display_aprsis_connected                 ─
+//   display_aprsis_connected                 
 void display_aprsis_connected() {
     u8g2.clearBuffer();
     u8g2.setFont(u8g2_font_6x10_tr);
@@ -92,28 +89,44 @@ void display_aprsis_failed() {
     delay(1500);
 }
 
-//   display_status  
-void display_status(uint32_t rx_count, uint32_t tx_count) {
+// display_status 
+void display_status(uint32_t rx_count, uint32_t tx_count,
+                    const char* last_call, int16_t last_rssi,
+                    float last_dist_km, uint32_t stations) {
     char line[22];
 
     u8g2.clearBuffer();
 
-    u8g2.setFont(u8g2_font_7x13B_tr);
-    u8g2.drawStr(0, 12, SSID_APRS);
-
+    // Línea 1  callsign + contador RX
     u8g2.setFont(u8g2_font_6x10_tr);
-    u8g2.drawStr(0, 28, "W:OK  A:OK");
+    u8g2.drawStr(0, 10, SSID_APRS);
+    snprintf(line, sizeof(line), "RX:%-4lu", rx_count);
+    u8g2.drawStr(80, 10, line);
 
-    snprintf(line, sizeof(line), "RX:%-4lu TX:%-4lu", rx_count, tx_count);
-    u8g2.drawStr(0, 42, line);
+    // Línea 2  estado WiFi, APRS-IS y contador TX
+    snprintf(line, sizeof(line), "W:OK A:OK TX:%-4lu", tx_count);
+    u8g2.drawStr(0, 24, line);
 
-    u8g2.drawHLine(0, 52, 128);
-    u8g2.drawStr(0, 63, "Escuchando LoRa...");
+    // Línea 3  estaciones escuchadas y distancia
+    if (last_dist_km >= 0 && strlen(last_call) > 0) {
+        snprintf(line, sizeof(line), "St:%-2lu D:%.1fkm", stations, last_dist_km);
+    } else {
+        snprintf(line, sizeof(line), "St:%-2lu D:---km", stations);
+    }
+    u8g2.drawStr(0, 38, line);
+
+    // Línea 4  RSSI de la última estación escuchada
+    u8g2.drawHLine(0, 42, 128);
+    if (last_rssi != 0) {
+        snprintf(line, sizeof(line), "%-9s %ddBm", last_call, last_rssi);
+    } else {
+        snprintf(line, sizeof(line), "Escuchando LoRa...");
+    }
+    u8g2.drawStr(0, 53, line);
 
     u8g2.sendBuffer();
 }
 
-//   display_packet  
 void display_packet(const AprsFrame& frame) {
     char line[22];
 
@@ -122,16 +135,12 @@ void display_packet(const AprsFrame& frame) {
     u8g2.drawStr(0, 12, frame.src);
 
     u8g2.setFont(u8g2_font_6x10_tr);
-
     snprintf(line, sizeof(line), "RSSI: %d dBm", frame.rssi);
     u8g2.drawStr(0, 28, line);
-
     snprintf(line, sizeof(line), "SNR:  %.1f dB", frame.snr);
     u8g2.drawStr(0, 42, line);
-
     u8g2.drawHLine(0, 52, 128);
     u8g2.drawStr(0, 63, "Forwarded OK");
-
     u8g2.sendBuffer();
 }
 
