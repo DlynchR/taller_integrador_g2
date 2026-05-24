@@ -28,3 +28,6 @@ WifiState wifi_get_state();
 
 // Retorna la IP asignada como String (para el OLED)
 String   wifi_get_ip();
+
+// Retorna true si se agotaron los reintentos — FSM debe ir a S7
+bool     wifi_failed_permanently();
