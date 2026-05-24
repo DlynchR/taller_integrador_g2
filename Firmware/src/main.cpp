@@ -244,6 +244,12 @@ void loop() {
         //   Verificar reconexión WiFi (modo offline)      
         if (!wifi_is_connected()) {
             wifi_loop();
+            // Si se agotaron los reintentos → reiniciar el sistema
+            if (wifi_failed_permanently()) {
+                Serial.println("[S3] WiFi falló permanentemente → S7");
+                go_to(State::S7_ERROR);
+                break;
+            }
         }
 
         //   Paquete LoRa recibido → S4             
