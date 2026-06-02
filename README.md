@@ -350,3 +350,61 @@ LoRa driver → transmit()
     ▼
 Antena LoRa
 ```
+## Completitud del Proyecto
+
+Esta sección documenta el estado de implementación del firmware propio del iGate, desarrollado desde cero por el Grupo 1.
+
+### Estado de implementación por módulo
+
+| Módulo | Archivos | Estado | Estados FSM asociados |
+|---|---|---|---|
+| FSM Controller | `main.cpp` | Completo | S0–S7 |
+| WiFi Manager | `wifi_manager.h/.cpp` | Completo | S1 |
+| APRS-IS Client | `aprs_is.h/.cpp` | Completo | S2, S5 |
+| LoRa Driver | `lora_driver.h/.cpp` | Completo | S3, S4, S6 |
+| APRS Parser | `aprs_parser.h/.cpp` | Completo | S4 |
+| Beacon Builder | `beacon.h/.cpp` | Completo | S6 |
+| Display Manager | `display.h/.cpp` | Completo | Todos |
+| Config | `config.h` | Completo | Global |
+
+### Funcionalidades implementadas y verificadas
+
+El firmware fue validado en campo con resultados publicados en aprs.fi bajo el indicativo `TI1TEC-10`. Las funcionalidades confirmadas son las siguientes.
+
+**Conexión WiFi con reconexión automática.** El módulo establece la conexión en modo estación (STA), con la reconexión automática del ESP32 deshabilitada para que sea la FSM quien controle el ciclo de reconexión mediante backoff de 30 segundos y un máximo de 5 reintentos.
+
+**Conexión y autenticación a APRS-IS.** El cliente abre un socket TCP hacia `rotate.aprs2.net:14580`, lee el banner del servidor, envía el string de login con callsign, passcode y filtro geográfico, y valida la respuesta `verified`. Se confirmó la autenticación exitosa contra múltiples servidores de la red Tier 2 (T2CHILE, T2SYDNEY, T2FINLAND, entre otros).
+
+**Recepción y decodificación de paquetes LoRa.** El driver opera el SX1276 en modo recepción continua mediante interrupción por hardware (DIO0). El parser detecta y descarta la cabecera de sincronización de 3 bytes (`0x3C 0xFF 0x01`) que anteponen ciertos dispositivos LoRa APRS, y luego extrae el callsign origen, destino, path y payload del frame en formato texto estándar `CALLSIGN>DESTINO,PATH:payload`.
+
+**Reenvío de paquetes a APRS-IS (forward).** Los paquetes válidos recibidos se reformatean con el indicador `qAR` y el callsign del iGate, y se suben al servidor por TCP. Se verificó el reenvío de estaciones reales como `TI2JR-10`, `TI3WTI-10` y `TI0TEC1-7`.
+
+**Transmisión de beacon de posición.** El iGate transmite periódicamente (cada 10 minutos) su posición fija configurada en `config.h`, tanto por LoRa como por subida directa a APRS-IS. Esto permite que la estación aparezca en el mapa de aprs.fi aun cuando no exista otro iGate cercano que la escuche.
+
+**Cálculo de distancia a estaciones escuchadas.** El firmware decodifica las coordenadas de los paquetes recibidos en los tres formatos APRS de posición — texto simple, comprimido Base91 y Mic-E — y calcula la distancia mediante la fórmula de Haversine respecto a la posición del iGate. Se confirmaron distancias coherentes con la realidad geográfica, alcanzando hasta 28.7 km en línea de vista.
+
+**Visualización en OLED.** La pantalla muestra en tiempo real el callsign, el estado de las conexiones WiFi y APRS-IS, los contadores de paquetes recibidos y reenviados, el número de estaciones escuchadas, la distancia a la última estación y su RSSI.
+
+**Watchdog de hardware.** El sistema configura el watchdog timer del ESP32 con un período de 30 segundos. Durante las operaciones bloqueantes de espera (conexión WiFi, conexión TCP, espera de respuesta del servidor) se alimenta el watchdog para evitar reinicios indebidos, mientras se mantiene la protección contra cuelgues reales del loop principal.
+
+### Corrección de fallo en la reconexión WiFi
+
+Durante las pruebas se identificó un fallo en la lógica de reconexión WiFi. En la implementación inicial, cuando el módulo agotaba los 5 reintentos de conexión, el estado quedaba marcado como `FAILED` y la función `wifi_loop()` dejaba de intentar reconectar indefinidamente. Como el loop principal seguía ejecutándose con normalidad, el watchdog tampoco intervenía, dejando al iGate atascado de forma permanente en modo offline sin posibilidad de recuperación automática.
+
+La corrección consistió en agregar la función `wifi_failed_permanently()`, que reporta cuando se han agotado todos los reintentos. La FSM consulta esta función en el estado S3 (Idle), y al detectar el fallo permanente transiciona al estado S7 (Error / Watchdog), el cual ejecuta `ESP.restart()` para reiniciar el microcontrolador completo. De esta forma, el iGate vuelve a intentar la conexión desde cero (estado S0) en lugar de permanecer inutilizable, garantizando la operación autónoma 24/7 que requiere una estación desatendida.
+
+El flujo corregido es el siguiente:
+
+```
+WiFi se cae → S3 llama wifi_loop() cada 30 s
+            → Reintentos 1/5 ... 5/5 (modo offline activo, escucha LoRa)
+            → wifi_failed_permanently() == true
+            → S3 transiciona a S7
+            → ESP.restart() → S0 (reinicio limpio)
+```
+
+Durante el período de reintentos (hasta 2.5 minutos), el iGate mantiene operativo el modo offline: continúa escuchando paquetes LoRa y transmitiendo beacons por radio, aunque sin subir información a APRS-IS hasta recuperar la conectividad.
+
+### Inspiración y código propio
+
+El código del firmware es de elaboración de los autores, Álvaro Chacón y Denzel Lynch. Del proyecto de referencia de richonguzman se tomó la presencia de la cabecera de sincronización de 3 bytes en los frames LoRa APRS y las fórmulas estándar de decodificación de posición (Base91 y Mic-E), las cuales corresponden al estándar público APRS y fueron reimplementadas de forma independiente en `main.cpp`. La arquitectura modular, la máquina de estados, la lógica de reconexión, el cálculo de distancias y la gestión del display son aportes originales del Grupo 1.
